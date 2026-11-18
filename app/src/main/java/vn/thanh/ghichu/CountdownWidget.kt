@@ -21,14 +21,14 @@ import java.util.*
 
 class CountdownWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val event = EventDatabase.get(context).eventDao().observeAll().first().firstOrNull { it.dateTimeMillis > System.currentTimeMillis() }
+        val event = EventDatabase.get(context).eventDao().observeAll().first().filter { it.dateTimeMillis >= System.currentTimeMillis() }.minByOrNull { it.dateTimeMillis }
         provideContent {
             Column(GlanceModifier.fillMaxSize().background(Color(0xFF1B1D35)).padding(16.dp), verticalAlignment = Alignment.Vertical.Top) {
                 Text("Đếm ngược sự kiện", style = TextStyle(color = ColorProvider(Color(0xFFB6A6FF)), fontSize = 14.sp))
                 if (event == null) Text("Chưa có sự kiện sắp tới", style = TextStyle(color = ColorProvider(Color.White), fontSize = 16.sp)) else {
                     Text(event.emoji + " " + event.title, style = TextStyle(color = ColorProvider(Color.White), fontSize = 17.sp))
                     val days = ((event.dateTimeMillis - System.currentTimeMillis()) / 86_400_000L).coerceAtLeast(0)
-                    Text("Còn " + days + " ngày · " + SimpleDateFormat("dd/MM/yyyy", Locale("vi", "VN")).format(Date(event.dateTimeMillis)), style = TextStyle(color = ColorProvider(Color(0xFFFF6B9D)), fontSize = 13.sp))
+                    Text(if (days == 0L) "Hôm nay · " + SimpleDateFormat("dd/MM/yyyy", Locale("vi", "VN")).format(Date(event.dateTimeMillis)) else "Còn " + days + " ngày · " + SimpleDateFormat("dd/MM/yyyy", Locale("vi", "VN")).format(Date(event.dateTimeMillis)), style = TextStyle(color = ColorProvider(Color(0xFFFF6B9D)), fontSize = 13.sp))
                 }
             }
         }
